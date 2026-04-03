@@ -1,27 +1,18 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppInfo
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
 TOKEN = os.getenv("TOKEN")
 APP_URL = os.getenv("APP_URL")
 
-if not TOKEN:
-    raise RuntimeError("Environment variable TOKEN is missing")
-
-if not APP_URL:
-    raise RuntimeError("Environment variable APP_URL is missing")
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(
-        "Бот запущен. Отправь /app, чтобы получить кнопку для открытия Mini App."
-    )
-
-
-async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def app_command(update, context):
     keyboard = [
-        [InlineKeyboardButton("🚀 Открыть матрицу", web_app=WebAppInfo(url=APP_URL))]
+        [InlineKeyboardButton(
+            "🚀 Открыть матрицу",
+            web_app=WebAppInfo(url=APP_URL)
+        )]
     ]
+
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
@@ -29,13 +20,12 @@ async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         reply_markup=reply_markup
     )
 
+async def start(update, context):
+    await update.message.reply_text("Бот работает. Напиши /app")
 
-def main() -> None:
-    application = ApplicationBuilder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("app", app_command))
-    application.run_polling()
+app = ApplicationBuilder().token(TOKEN).build()
 
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("app", app_command))
 
-if __name__ == "__main__":
-    main()
+app.run_polling()
